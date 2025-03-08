@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>这是父模版</title>
+{#    <link rel="stylesheet" href="{{ url_for('static',filename='css/background.css') }}">#}
+</head>
+<body>
+我是父模版的文字
+{% block body %}
+{% endblock %}
+<footer>这是父模版底部</footer>
+</body>
+</html>
