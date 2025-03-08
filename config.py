@@ -15,10 +15,14 @@ SQLALCHEMY_DATABASE_URI = DB_URI
 # 记得关掉 POP3/SMTP
 
 # 邮箱配置
+# 邮箱类型
 MAIL_SERVER = 'smtp.qq.com'
 MAIL_PORT = 465
-MAIL_USE_SSL = True
 # MAIL_SSL仅能使用中文
-MAIL_USERNAME = '3225340736@qq.com'
-MAIL_PASSWORD = 'czpfiqbvaeqhdajd'
-MAIL_DEFAULT_SENDER = '3225340736@qq.com'
+MAIL_USE_SSL = True
+# 邮箱名
+MAIL_USERNAME = 'xxxxxxxxxx@qq.com'
+# POP3/SMTP打开后的密码
+MAIL_PASSWORD = '..........'
+# 发送邮邮件者
+MAIL_DEFAULT_SENDER = 'xxxxxxxxxx@qq.com'
