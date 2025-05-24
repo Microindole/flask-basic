@@ -68,7 +68,24 @@ def search():
     # 3.用POST请求 ，request.form
     q = request.args.get('q')
     questions = QuestionModel.query.filter(QuestionModel.title.contains(q)).all()
-    return render_template("index.html", questions=questions)
+    
+    # 搜索结果为空时，传递提示信息
+    search_info = None
+    if q:
+        if not questions:
+            search_info = {
+                "keyword": q,
+                "count": 0,
+                "message": f"没有找到与 '{q}' 相关的问题"
+            }
+        else:
+            search_info = {
+                "keyword": q,
+                "count": len(questions),
+                "message": f"找到 {len(questions)} 个与 '{q}' 相关的问题"
+            }
+    
+    return render_template("index.html", questions=questions, search_info=search_info)
 
 # url传参
 # 邮件发送

@@ -9,6 +9,7 @@ class UserModel(db.Model):
     password = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     join_time = db.Column(db.DateTime, default=datetime.now)
+    last_login_time = db.Column(db.DateTime, nullable=True)  # 新增字段
 
 
 class EmailCaptchaModel(db.Model):
@@ -17,6 +18,7 @@ class EmailCaptchaModel(db.Model):
     email = db.Column(db.String(100), nullable=False)
     captcha = db.Column(db.String(100), nullable=False)
     used = db.Column(db.Boolean, nullable=False, default=False)
+    create_time = db.Column(db.DateTime, default=datetime.now)
 
 
 class QuestionModel(db.Model):
@@ -25,6 +27,7 @@ class QuestionModel(db.Model):
     title = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
     create_time = db.Column(db.DateTime, default=datetime.now)
+    last_modified_time = db.Column(db.DateTime, default=datetime.now, onupdate=datetime.now)
 
     # 外键
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -44,3 +47,27 @@ class AnswerModel(db.Model):
     question = db.relationship(QuestionModel,
                                backref=db.backref('answers', order_by=create_time.desc()))
     author = db.relationship(UserModel, backref='answers')
+
+
+class AnswerAuditLogModel(db.Model):
+    __tablename__ = 'answer_audit_log'
+    log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    answer_id = db.Column(db.Integer, db.ForeignKey('answer.id'), nullable=False)
+    operation_type = db.Column(db.String(10), nullable=False)  # 'INSERT', 'UPDATE', 'DELETE'
+    old_content = db.Column(db.Text, nullable=True)
+    new_content = db.Column(db.Text, nullable=True)
+    operation_time = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    operated_by_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
+
+    answer = db.relationship(AnswerModel, backref=db.backref('audit_logs', lazy='dynamic'))
+    operator = db.relationship(UserModel, backref=db.backref('answer_audit_actions', lazy='dynamic'))
+
+
+class UserLoginLogModel(db.Model):
+    __tablename__ = 'user_login_log'
+    log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    login_time = db.Column(db.DateTime, nullable=False, default=datetime.now)
+    ip_address = db.Column(db.String(45), nullable=True)
+
+    user = db.relationship(UserModel, backref=db.backref('login_logs', lazy='dynamic'))

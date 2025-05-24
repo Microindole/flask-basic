@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="container mt-4">
+    <h2>用户活跃度统计</h2>
+    <p>用户名：{{ user.username }}</p>
+    {% if activity %}
+        <p>提问数：{{ activity.total_questions }}</p>
+        <p>回答数：{{ activity.total_answers }}</p>
+    {% else %}
+        <p>暂无数据</p>
+    {% endif %}
+    <a href="{{ url_for('qa.index') }}" class="btn btn-secondary mt-3">返回首页</a>
+</div>
+{% endblock %}

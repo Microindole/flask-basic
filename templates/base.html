@@ -38,6 +38,14 @@
                         <a class="nav-link">{{ user.username }}</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('info.user_activity', user_id=user.id) }}">我的活跃度</a>
+                    </li>
+                    {% if user.email == 'admin@example.com' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('info.admin_captcha') }}">验证码失效管理</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('auth.logout') }}">退出登录</a>
                     </li>
                 {% else %}
@@ -57,6 +65,37 @@
     <div class="container">
         {% block body %}{% endblock %}
     </div>
-</body>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static',filename='bootstrap/bootstrap.bundle.min.js')}}"></script>
+    <script>
+        // 点赞功能
+        $(document).on('click', '.like-btn', function() {
+            $(this).toggleClass('like-active');
+            $(this).addClass('like-animate');
+            setTimeout(() => {
+                $(this).removeClass('like-animate');
+            }, 500);
+        });
 
+        // 滚动效果
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 50) {
+                $('.navbar').addClass('navbar-scrolled');
+            } else {
+                $('.navbar').removeClass('navbar-scrolled');
+            }
+        });
+
+        // 新元素淡入效果
+        $(document).ready(function() {
+            $('.question-ul li, .comment-group li').each(function(index) {
+                $(this).css('opacity', 0);
+                $(this).delay(index * 100).animate({
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                }, 500);
+            });
+        });
+    </script>
+</body>
 </html>

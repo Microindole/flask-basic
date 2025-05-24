@@ -1,11 +1,12 @@
-from flask import Blueprint, render_template, jsonify, request, redirect, url_for, session
+from flask import Blueprint, render_template, jsonify, request, redirect, url_for, session, flash
 from exts import mail, db
 from flask_mail import Message
 import string
 import random
-from models import EmailCaptchaModel, UserModel
+from models import EmailCaptchaModel, UserModel, UserLoginLogModel
 from .forms import RegisterForm, LoginForm
 from werkzeug.security import generate_password_hash, check_password_hash
+from datetime import datetime
 
 # /auth
 bp = Blueprint("auth", __name__, url_prefix='/auth')
@@ -14,32 +15,37 @@ bp = Blueprint("auth", __name__, url_prefix='/auth')
 # 默认是get请求
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == "GET":
-        return render_template("login.html")
-    else:
+    if request.method == 'POST':
         form = LoginForm(request.form)
         if form.validate():
             email = form.email.data
             password = form.password.data
             user = UserModel.query.filter_by(email=email).first()
             if not user:
-                print('邮箱在数据库中不存在！')
-                return redirect(url_for('auth.login'))
+                flash("邮箱在数据库中不存在！")
+                return redirect(url_for("auth.login"))
             if check_password_hash(user.password, password):
-                # cookie:
-                # cookie中不适合存储太多的数据，只适合存储少量的数据
-                # cookie一般用来存放登录授权的东西
-                # session
-                # flask中的session是经过加密后存储在cookie中的
                 session['user_id'] = user.id
-                return redirect('/')
-            else:
-                print('密码错误!')
-                return redirect(url_for('auth.login'))
 
+                # 更新 last_login_time (如果需要)
+                user.last_login_time = datetime.now()
+
+                # 直接记录登录日志
+                login_ip = request.remote_addr  # 获取IP地址
+                new_login_log = UserLoginLogModel(user_id=user.id, ip_address=login_ip,
+                                                   login_time=user.last_login_time)  # 假设有 UserLoginLogModel
+                db.session.add(new_login_log)
+
+                db.session.commit()  # 提交对 user.last_login_time 的更改，这将触发上面的触发器
+
+                return redirect("/")
+            else:
+                flash("密码错误！")
+                return redirect(url_for("auth.login"))
         else:
-            print(form.errors)
-            return redirect(url_for('auth.login'))
+            flash("邮箱或密码格式错误！")
+            return redirect(url_for("auth.login"))
+    return render_template("login.html")
 
 
 # GET: 从服务器上获取数据

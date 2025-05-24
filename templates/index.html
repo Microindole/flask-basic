@@ -7,6 +7,21 @@
         <div class="row" style="margin-top: 20px;">
             <div class="col"></div>
             <div class="col-10">
+                <!-- 搜索结果提示 -->
+                {% if search_info %}
+                <div class="search-result-info {% if search_info.count == 0 %}alert alert-warning{% else %}alert alert-info{% endif %} mb-4">
+                    {{ search_info.message }}
+                    {% if search_info.count == 0 %}
+                    <div class="mt-2">
+                        <a href="{{ url_for('qa.index') }}" class="btn btn-sm btn-outline-primary">返回全部问题</a>
+                        <a href="{{ url_for('qa.public_question') }}" class="btn btn-sm btn-primary ml-2">发布新问题</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- 问题列表 -->
+                {% if questions %}
                 <ul class="question-ul">
                     {% for question in questions %}
                         <img src="" alt="">
@@ -25,6 +40,11 @@
                     </li>
                     {% endfor %}
                 </ul>
+                {% elif not search_info %}
+                <div class="alert alert-info">
+                    暂时没有问题，开始 <a href="{{ url_for('qa.public_question') }}">发布第一个问题</a> 吧！
+                </div>
+                {% endif %}
             </div>
             <div class="col"></div>
         </div>

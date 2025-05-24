@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="container mt-4">
+    <h2>失效旧验证码</h2>
+    <form method="post">
+        <div class="form-group">
+            <label for="days">失效天数阈值：</label>
+            <input type="number" class="form-control" id="days" name="days" value="7" min="1" required>
+        </div>
+        <button type="submit" class="btn btn-warning mt-2">执行失效</button>
+    </form>
+</div>
+{% endblock %}
