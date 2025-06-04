@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='bootstrap/bootstrap.4.6.min.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/init.css') }}">
+    {% block head %}{% endblock %}
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="/">知了问答</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/">首页 <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('qa.public_question')}}">发布问答</a>
+                </li>
+                <li class="nav-item ml-2">
+                    <form class="form-inline my-2 my-lg-0" method="GET" action="{{ url_for('qa.search') }}">
+                        <input class="form-control mr-sm-2" type="search" placeholder="关键字" aria-label="Search" name="q">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">搜索</button>
+                    </form>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                {% if user %}
+                    <li class="nav-item">
+                        <a class="nav-link">{{ user.username }}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('info.user_activity', user_id=user.id) }}">我的活跃度</a>
+                    </li>
+                    {% if user.email == 'admin@example.com' %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('info.admin_captcha') }}">验证码失效管理</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.logout') }}">退出登录</a>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login')}}">登录</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.register')}}">注册</a>
+                    </li>
+                {% endif %}
+
+            </ul>
+        </div>
+    </div>
+    </nav>
+
+    <div class="container">
+        {% block body %}{% endblock %}
+    </div>
+    
+    <!-- 引入消息提示JS -->
+    <script src="{{ url_for('static', filename='js/message-toast.js') }}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static',filename='bootstrap/bootstrap.bundle.min.js')}}"></script>
+    <script>
+        // 点赞功能
+        $(document).on('click', '.like-btn', function() {
+            var $btn = $(this);
+            var questionId = $btn.data('question-id');
+            
+            // 添加动画效果
+            $btn.addClass('like-animate');
+            setTimeout(() => {
+                $btn.removeClass('like-animate');
+            }, 200);
+            
+            // 发送AJAX请求
+            $.ajax({
+                url: '{{ url_for("qa.like_question") }}',
+                method: 'POST',
+                data: {
+                    'question_id': questionId
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // 更新点赞数
+                        $btn.find('.likes-count').text(response.likes_count);
+                        
+                        // 切换点赞状态
+                        if (response.action === 'liked') {
+                            $btn.addClass('liked');
+                            $btn.find('i').removeClass('far').addClass('fas');
+                            // 使用新的消息提示样式 - 成功点赞
+                            messageToast.success('❤️ 点赞成功！', 2000);
+                        } else {
+                            $btn.removeClass('liked');
+                            $btn.find('i').removeClass('fas').addClass('far');
+                            // 使用新的消息提示样式 - 取消点赞
+                            messageToast.info('💔 已取消点赞', 2000);
+                        }
+                    } else {
+                        // 使用新的消息提示样式 - 错误提示
+                        messageToast.error('操作失败：' + response.message, 3000);
+                    }
+                },
+                error: function() {
+                    // 使用新的消息提示样式 - 网络错误
+                    messageToast.error('⚠️ 网络连接失败，请稍后重试', 3000);
+                }
+            });
+        });
+
+        // 滚动效果
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 50) {
+                $('.navbar').addClass('navbar-scrolled');
+            } else {
+                $('.navbar').removeClass('navbar-scrolled');
+            }
+        });
+
+        // 新元素淡入效果
+        $(document).ready(function() {
+            $('.question-ul li, .comment-group li').each(function(index) {
+                $(this).css('opacity', 0);
+                $(this).delay(index * 100).animate({
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                }, 500);
+            });
+        });
+
+        // 页面加载完成后显示欢迎消息（可选）
+        $(document).ready(function() {
+            // 如果用户刚登录，可以显示欢迎消息
+            {% if user %}
+            // messageToast.success('🎉 欢迎回来，{{ user.username }}！', 2000);
+            {% endif %}
+        });
+    </script>
+</body>
+</html>

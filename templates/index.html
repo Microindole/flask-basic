@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block head %}
+    <link rel="stylesheet" href="{{ url_for('static',filename='css/index.css') }}">
+    <style>
+        .like-btn {
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+        .like-btn:hover {
+            background-color: #f8f9fa;
+            color: #007bff;
+        }
+        .like-btn.liked {
+            color: #dc3545;
+            background-color: #fff5f5;
+        }
+        .like-animate {
+            transform: scale(1.2);
+            transition: transform 0.2s ease;
+        }
+        .question-stats {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+    </style>
+{% endblock %}
+{% block title %}首页{% endblock %}
+{% block body %}
+        <div class="row" style="margin-top: 20px;">
+            <div class="col"></div>
+            <div class="col-10">
+                <!-- 搜索结果提示 -->
+                {% if search_info %}
+                <div class="search-result-info {% if search_info.count == 0 %}alert alert-warning{% else %}alert alert-info{% endif %} mb-4">
+                    {{ search_info.message }}
+                    {% if search_info.count == 0 %}
+                    <div class="mt-2">
+                        <a href="{{ url_for('qa.index') }}" class="btn btn-sm btn-outline-primary">返回全部问题</a>
+                        <a href="{{ url_for('qa.public_question') }}" class="btn btn-sm btn-primary ml-2">发布新问题</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- 问题列表 -->
+                {% if questions %}
+                <ul class="question-ul">
+                    {% for question in questions %}
+                    <li>
+                        <div class="side-question">
+                            <img class="side-question-avatar" src="{{url_for('static',filename='images/avatar.jpg')}}" alt="">
+                        </div>
+                        <div class="question-main">
+                            <div class="question-title"><a href="{{ url_for('qa.qa_detail', qa_id=question.id) }}">{{ question.title }}</a></div>
+                            <div class="question-content">{{ question.content }}</div>
+                            <div class="question-detail">
+                                <span class="question-author">{{ question.author.username }}</span>
+                                <span class="question-time">{{ question.create_time }}</span>
+                            </div>
+                            <div class="question-stats">
+                                {% if user %}
+                                <button class="like-btn {% if user_likes.get(question.id) %}liked{% endif %}" 
+                                        data-question-id="{{ question.id }}">
+                                    <i class="fas fa-heart"></i> 
+                                    <span class="likes-count">{{ question.likes_count }}</span>
+                                </button>
+                                {% else %}
+                                <span class="text-muted">
+                                    <i class="far fa-heart"></i> {{ question.likes_count }}
+                                </span>
+                                {% endif %}
+                                <span class="text-muted">
+                                    <i class="far fa-comment"></i> {{ question.answers|length }}
+                                </span>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% elif not search_info %}
+                <div class="alert alert-info">
+                    暂时没有问题，开始 <a href="{{ url_for('qa.public_question') }}">发布第一个问题</a> 吧！
+                </div>
+                {% endif %}
+            </div>
+            <div class="col"></div>
+        </div>
+{% endblock %}

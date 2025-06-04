@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+{% block title %}我的活跃度{% endblock %}
+
+{% block head %}
+<style>
+    .activity-dashboard {
+        background:#667eea;
+        color: white;
+        padding: 30px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    
+    .stat-card {
+        background: rgba(255,255,255,0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 8px;
+        padding: 25px;
+        margin: 15px 0;
+        border: 1px solid rgba(255,255,255,0.2);
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        /* transform: translateY(-5px); */
+        box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+        background: linear-gradient(45deg, #ffd700, #ffed4e);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .stat-label {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        position: relative;
+        height: 400px;
+    }
+    
+    .activity-timeline {
+        background: white;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 20px 0;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    }
+    
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-left: 3px solid #667eea;
+        padding-left: 20px;
+        margin: 10px 0;
+        position: relative;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        width: 12px;
+        height: 12px;
+        background: #667eea;
+        border-radius: 50%;
+        position: absolute;
+        left: -7.5px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: bold;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 10px;
+    }
+    
+    .loading-spinner {
+        display: none;
+        text-align: center;
+        padding: 50px;
+    }
+    
+    .activity-progress {
+        margin: 20px 0;
+    }
+    
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .progress {
+        height: 8px;
+        border-radius: 20px;
+        background: rgba(255,255,255,0.2);
+    }
+    
+    .progress-bar {
+        border-radius: 20px;
+        background: linear-gradient(45deg, #ffd700, #ffed4e);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <div class="page-header">
+        <h1 class="page-title">📊 我的活跃度</h1>
+        <p class="text-muted">实时统计您在平台上的活动数据</p>
+    </div>
+
+    <!-- 用户概览卡片 -->
+    <div class="activity-dashboard">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <div class="stat-number" id="questionsCount">{{ activity.total_questions if activity else 0 }}</div>
+                    <div class="stat-label">📝 提问总数</div>
+                    <div class="activity-progress">
+                        <div class="progress-label">
+                            <span>活跃度</span>
+                            <span id="questionProgress">{{ ((activity.total_questions / 10) * 100) | round if activity and activity.total_questions < 10 else 100 }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ ((activity.total_questions / 10) * 100) if activity and activity.total_questions < 10 else 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <div class="stat-number" id="answersCount">{{ activity.total_answers if activity else 0 }}</div>
+                    <div class="stat-label">💬 回答总数</div>
+                    <div class="activity-progress">
+                        <div class="progress-label">
+                            <span>活跃度</span>
+                            <span id="answerProgress">{{ ((activity.total_answers / 20) * 100) | round if activity and activity.total_answers < 20 else 100 }}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ ((activity.total_answers / 20) * 100) if activity and activity.total_answers < 20 else 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card text-center">
+                    <div class="stat-number" id="totalActivity">{{ (activity.total_questions + activity.total_answers) if activity else 0 }}</div>
+                    <div class="stat-label">🔥 总活跃度</div>
+                    <div class="activity-progress">
+                        <div class="progress-label">
+                            <span>等级</span>
+                            <span id="levelText">
+                                {% if activity %}
+                                    {% set total = activity.total_questions + activity.total_answers %}
+                                    {% if total >= 50 %}专家{% elif total >= 20 %}高级{% elif total >= 10 %}中级{% else %}新手{% endif %}
+                                {% else %}新手{% endif %}
+                            </span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: {{ (((activity.total_questions + activity.total_answers) / 50) * 100) if activity and (activity.total_questions + activity.total_answers) < 50 else 100 }}%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <h4>👋 {{ user.username }}</h4>
+            <p>加入时间: {{ user.join_time.strftime('%Y年%m月%d日') }}</p>
+        </div>
+    </div>
+
+    <!-- 图表区域 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="text-center mb-4">📈 活动分布</h4>
+                <canvas id="activityPieChart"></canvas>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-container">
+                <h4 class="text-center mb-4">📊 活跃度对比</h4>
+                <canvas id="activityBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 趋势图 -->
+    <div class="chart-container">
+        <h4 class="text-center mb-4">📅 月度活动趋势</h4>
+        <canvas id="activityLineChart"></canvas>
+    </div>
+
+    <!-- 最近活动时间线 -->
+    <div class="activity-timeline">
+        <h4 class="mb-4">🕒 最近活动</h4>
+        <div id="activityTimeline">
+            {% if activity and (activity.total_questions > 0 or activity.total_answers > 0) %}
+                <div class="timeline-item">
+                    <div>
+                        <strong>🎉 欢迎来到知了问答!</strong>
+                        <small class="text-muted d-block">您已经贡献了 {{ activity.total_questions }} 个问题和 {{ activity.total_answers }} 个回答</small>
+                    </div>
+                </div>
+                {% if activity.total_questions > 0 %}
+                <div class="timeline-item">
+                    <div>
+                        <strong>📝 发布问题</strong>
+                        <small class="text-muted d-block">总共发布了 {{ activity.total_questions }} 个问题</small>
+                    </div>
+                </div>
+                {% endif %}
+                {% if activity.total_answers > 0 %}
+                <div class="timeline-item">
+                    <div>
+                        <strong>💬 回答问题</strong>
+                        <small class="text-muted d-block">总共回答了 {{ activity.total_answers }} 个问题</small>
+                    </div>
+                </div>
+                {% endif %}
+            {% else %}
+                <div class="text-center text-muted">
+                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                    <p>还没有活动记录，快去发布第一个问题吧！</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{{ url_for('qa.index') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-home"></i> 返回首页
+        </a>
+        <a href="{{ url_for('qa.public_question') }}" class="btn btn-success btn-lg ml-2">
+            <i class="fas fa-plus"></i> 发布问题
+        </a>
+    </div>
+</div>
+
+<!-- 加载提示 -->
+<div class="loading-spinner" id="loadingSpinner">
+    <div class="spinner-border text-primary" role="status">
+        <span class="sr-only">加载中...</span>
+    </div>
+    <p class="mt-2">正在加载图表数据...</p>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 数据
+    const questionsCount = {{ activity.total_questions if activity else 0 }};
+    const answersCount = {{ activity.total_answers if activity else 0 }};
+    const totalActivity = questionsCount + answersCount;
+
+    // 1. 饼图 - 活动分布
+    const pieCtx = document.getElementById('activityPieChart').getContext('2d');
+    const pieChart = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['提问', '回答'],
+            datasets: [{
+                data: [questionsCount, answersCount],
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(118, 75, 162, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(102, 126, 234, 1)',
+                    'rgba(118, 75, 162, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw;
+                            const total = questionsCount + answersCount;
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+
+    // 2. 柱状图 - 活跃度对比
+    const barCtx = document.getElementById('activityBarChart').getContext('2d');
+    const barChart = new Chart(barCtx, {
+        type: 'bar',
+        data: {
+            labels: ['我的提问', '我的回答', '总活跃度'],
+            datasets: [{
+                label: '数量',
+                data: [questionsCount, answersCount, totalActivity],
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(118, 75, 162, 0.8)',
+                    'rgba(255, 215, 0, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(102, 126, 234, 1)',
+                    'rgba(118, 75, 162, 1)',
+                    'rgba(255, 215, 0, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+
+    // 3. 折线图 - 月度趋势 (模拟数据)
+    const lineCtx = document.getElementById('activityLineChart').getContext('2d');
+    
+    // 生成最近6个月的标签
+    const months = [];
+    const now = new Date();
+    for(let i = 5; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push(date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'short' }));
+    }
+
+    // 模拟月度数据分布
+    const monthlyQuestions = [];
+    const monthlyAnswers = [];
+    
+    for(let i = 0; i < 6; i++) {
+        // 将总数据分布到6个月中，最近月份占比更高
+        const questionRatio = [0.05, 0.1, 0.15, 0.2, 0.25, 0.25][i];
+        const answerRatio = [0.08, 0.12, 0.18, 0.22, 0.2, 0.2][i];
+        
+        monthlyQuestions.push(Math.round(questionsCount * questionRatio));
+        monthlyAnswers.push(Math.round(answersCount * answerRatio));
+    }
+
+    const lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: '提问数',
+                data: monthlyQuestions,
+                borderColor: 'rgba(102, 126, 234, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: '回答数',
+                data: monthlyAnswers,
+                borderColor: 'rgba(118, 75, 162, 1)',
+                backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                tension: 0.4,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                },
+                x: {
+                    grid: {
+                        color: 'rgba(0,0,0,0.1)'
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        }
+    });
+
+    // 数字动画效果
+    function animateNumbers() {
+        const numbers = document.querySelectorAll('.stat-number');
+        numbers.forEach((number, index) => {
+            const finalValue = parseInt(number.textContent);
+            let currentValue = 0;
+            const increment = finalValue / 50;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    number.textContent = finalValue;
+                    clearInterval(timer);
+                } else {
+                    number.textContent = Math.floor(currentValue);
+                }
+            }, 30);
+        });
+    }
+
+    // 启动数字动画
+    setTimeout(animateNumbers, 500);
+
+    // 添加实时更新功能
+    function updateRealTimeData() {
+        // 这里可以添加AJAX请求来获取最新数据
+        // 每30秒更新一次数据
+        setTimeout(updateRealTimeData, 30000);
+    }
+
+    // 启动实时更新
+    updateRealTimeData();
+});
+</script>
+{% endblock %}

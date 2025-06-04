@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1400" height="800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .entity { fill: #e3f2fd; stroke: #1976d2; stroke-width: 2; }
+      .entity-title { fill: #1976d2; font-weight: bold; font-size: 14px; font-family: Arial; }
+      .attribute { fill: #333; font-size: 11px; font-family: Arial; }
+      .pk { fill: #d32f2f; font-weight: bold; }
+      .fk { fill: #1976d2; font-style: italic; }
+      .relationship { stroke: #666; stroke-width: 2; fill: none; }
+      .cardinality { fill: #d32f2f; font-size: 12px; font-family: Arial; font-weight: bold; }
+      .relation-label { fill: #666; font-size: 10px; font-family: Arial; font-style: italic; }
+      .weak-entity { fill: #fff8e1; stroke: #ff8f00; stroke-width: 2; }
+      .junction { fill: #f3e5f5; stroke: #7b1fa2; stroke-width: 2; }
+    </style>
+  </defs>
+  
+  <!-- 标题 -->
+  <text x="700" y="25" text-anchor="middle" class="entity-title" style="font-size: 18px;">Flask 知识问答系统 - 数据库 ER 图</text>
+  
+  <!-- 第一层：核心业务实体 - 水平排列 -->
+  <!-- USER 实体 -->
+  <rect x="50" y="60" width="180" height="150" class="entity"/>
+  <text x="140" y="80" text-anchor="middle" class="entity-title">USER</text>
+  <line x1="50" y1="90" x2="230" y2="90" stroke="#1976d2"/>
+  <text x="60" y="105" class="attribute pk">id (PK)</text>
+  <text x="60" y="120" class="attribute">username</text>
+  <text x="60" y="135" class="attribute">password</text>
+  <text x="60" y="150" class="attribute">email (UK)</text>
+  <text x="60" y="165" class="attribute">join_time</text>
+  <text x="60" y="180" class="attribute">last_login_time</text>
+  
+  <!-- QUESTION 实体 -->
+  <rect x="300" y="60" width="200" height="170" class="entity"/>
+  <text x="400" y="80" text-anchor="middle" class="entity-title">QUESTION</text>
+  <line x1="300" y1="90" x2="500" y2="90" stroke="#1976d2"/>
+  <text x="310" y="105" class="attribute pk">id (PK)</text>
+  <text x="310" y="120" class="attribute">title</text>
+  <text x="310" y="135" class="attribute">content</text>
+  <text x="310" y="150" class="attribute">create_time</text>
+  <text x="310" y="165" class="attribute">last_modified_time</text>
+  <text x="310" y="180" class="attribute">likes_count</text>
+  <text x="310" y="195" class="attribute fk">author_id (FK)</text>
+  <text x="310" y="210" class="attribute">📊 Auto: last_modified</text>
+  
+  <!-- ANSWER 实体 -->
+  <rect x="570" y="60" width="180" height="150" class="entity"/>
+  <text x="660" y="80" text-anchor="middle" class="entity-title">ANSWER</text>
+  <line x1="570" y1="90" x2="750" y2="90" stroke="#1976d2"/>
+  <text x="580" y="105" class="attribute pk">id (PK)</text>
+  <text x="580" y="120" class="attribute">content</text>
+  <text x="580" y="135" class="attribute">create_time</text>
+  <text x="580" y="150" class="attribute fk">question_id (FK)</text>
+  <text x="580" y="165" class="attribute fk">author_id (FK)</text>
+  <text x="580" y="180" class="attribute">📊 Auto: audit_log</text>
+  
+  <!-- 第二层：关系表 - 居中放置 -->
+  <!-- QUESTION_LIKES 关系表 -->
+  <rect x="320" y="280" width="200" height="130" class="junction"/>
+  <text x="420" y="300" text-anchor="middle" class="entity-title">QUESTION_LIKES</text>
+  <line x1="320" y1="310" x2="520" y2="310" stroke="#7b1fa2"/>
+  <text x="330" y="325" class="attribute pk">id (PK)</text>
+  <text x="330" y="340" class="attribute fk">question_id (FK)</text>
+  <text x="330" y="355" class="attribute fk">user_id (FK)</text>
+  <text x="330" y="370" class="attribute">create_time</text>
+  <text x="330" y="385" class="attribute">UNIQUE(question_id, user_id)</text>
+  
+  <!-- 第三层：支持和日志实体 - 底层排列 -->
+  <!-- EMAIL_CAPTCHA 实体 -->
+  <!-- <rect x="50" y="480" width="180" height="130" class="weak-entity"/>
+  <text x="140" y="500" text-anchor="middle" class="entity-title">EMAIL_CAPTCHA</text>
+  <line x1="50" y1="510" x2="230" y2="510" stroke="#ff8f00"/>
+  <text x="60" y="525" class="attribute pk">id (PK)</text>
+  <text x="60" y="540" class="attribute">email</text>
+  <text x="60" y="555" class="attribute">captcha</text>
+  <text x="60" y="570" class="attribute">used</text>
+  <text x="60" y="585" class="attribute">create_time</text>
+  <text x="60" y="600" class="attribute">🔧 SP: deactivate_old</text> -->
+  
+  <!-- USER_LOGIN_LOG 实体 -->
+  <rect x="280" y="480" width="180" height="130" class="weak-entity"/>
+  <text x="370" y="500" text-anchor="middle" class="entity-title">USER_LOGIN_LOG</text>
+  <line x1="280" y1="510" x2="460" y2="510" stroke="#ff8f00"/>
+  <text x="290" y="525" class="attribute pk">log_id (PK)</text>
+  <text x="290" y="540" class="attribute fk">user_id (FK)</text>
+  <text x="290" y="555" class="attribute">login_time</text>
+  <text x="290" y="570" class="attribute">ip_address</text>
+  <text x="290" y="585" class="attribute">📊 Auto by trigger</text>
+  
+  <!-- ANSWER_AUDIT_LOG 实体 -->
+  <rect x="510" y="480" width="200" height="150" class="weak-entity"/>
+  <text x="610" y="500" text-anchor="middle" class="entity-title">ANSWER_AUDIT_LOG</text>
+  <line x1="510" y1="510" x2="710" y2="510" stroke="#ff8f00"/>
+  <text x="520" y="525" class="attribute pk">log_id (PK)</text>
+  <text x="520" y="540" class="attribute fk">answer_id (FK)</text>
+  <text x="520" y="555" class="attribute">operation_type</text>
+  <text x="520" y="570" class="attribute">old_content</text>
+  <text x="520" y="585" class="attribute">new_content</text>
+  <text x="520" y="600" class="attribute">operation_time</text>
+  <text x="520" y="615" class="attribute fk">operated_by_user_id (FK)</text>
+  
+  <!-- ALEMBIC_VERSION 实体
+  <rect x="760" y="480" width="180" height="100" class="weak-entity"/>
+  <text x="850" y="500" text-anchor="middle" class="entity-title">ALEMBIC_VERSION</text>
+  <line x1="760" y1="510" x2="940" y2="510" stroke="#ff8f00"/>
+  <text x="770" y="525" class="attribute pk">version_num (PK)</text>
+  <text x="770" y="540" class="attribute">🔧 Migration Control</text> -->
+  
+  <!-- 关系连线 - 重新设计避免交叉 -->
+  
+  <!-- 1. USER publishes QUESTION (1:N) - 直接水平连接 -->
+  <line x1="230" y1="130" x2="300" y2="130" class="relationship"/>
+  <text x="250" y="125" class="cardinality">1</text>
+  <text x="280" y="125" class="cardinality">N</text>
+  <text x="255" y="120" class="relation-label">publishes</text>
+  
+  <!-- 2. QUESTION has ANSWER (1:N) - 直接水平连接 -->
+  <line x1="500" y1="140" x2="570" y2="140" class="relationship"/>
+  <text x="520" y="135" class="cardinality">1</text>
+  <text x="550" y="135" class="cardinality">N</text>
+  <text x="530" y="130" class="relation-label">has</text>
+  
+  <!-- 3. USER writes ANSWER (1:N) - 上方弧形连接 -->
+  <path d="M 140 60 L 140 40 L 660 40 L 660 60" class="relationship"/>
+  <text x="125" y="35" class="cardinality">1</text>
+  <text x="675" y="35" class="cardinality">N</text>
+  <text x="390" y="30" class="relation-label">writes</text>
+  
+  <!-- 4. USER - QUESTION_LIKES (1:N) - 分支连接 -->
+  <line x1="140" y1="210" x2="140" y2="260" class="relationship"/>
+  <line x1="140" y1="260" x2="320" y2="350" class="relationship"/>
+  <text x="125" y="235" class="cardinality">1</text>
+  <text x="300" y="355" class="cardinality">N</text>
+  <text x="220" y="270" class="relation-label">likes</text>
+  
+  <!-- 5. QUESTION - QUESTION_LIKES (1:N) - 垂直连接 -->
+  <line x1="400" y1="230" x2="400" y2="280" class="relationship"/>
+  <text x="410" y="250" class="cardinality">1</text>
+  <text x="410" y="275" class="cardinality">N</text>
+  
+  <!-- 6. USER - USER_LOGIN_LOG (1:N) - 左侧垂直连接 -->
+  <line x1="110" y1="210" x2="110" y2="440" class="relationship"/>
+  <line x1="110" y1="440" x2="280" y2="545" class="relationship"/>
+  <text x="95" y="325" class="cardinality">1</text>
+  <text x="260" y="550" class="cardinality">N</text>
+  <text x="180" y="350" class="relation-label">logs</text>
+  
+  <!-- 7. ANSWER - ANSWER_AUDIT_LOG (1:N) - 右侧垂直连接 -->
+  <line x1="660" y1="210" x2="660" y2="440" class="relationship"/>
+  <line x1="660" y1="440" x2="610" y2="480" class="relationship"/>
+  <text x="670" y="325" class="cardinality">1</text>
+  <text x="590" y="475" class="cardinality">N</text>
+  <text x="620" y="350" class="relation-label">audits</text>
+  
+  <!-- 8. USER operates ANSWER_AUDIT_LOG (1:N) - 最左侧路径 -->
+  <path d="M 50 160 L 20 160 L 20 610 L 510 610" class="relationship"/>
+  <text x="5" y="385" class="cardinality">1</text>
+  <text x="490" y="615" class="cardinality">N</text>
+  <text x="250" y="625" class="relation-label">operates</text>
+  
+  <!-- 右侧图例 -->
+  <rect x="980" y="60" width="350" height="480" fill="#f8f9fa" stroke="#ddd" stroke-width="1" rx="8"/>
+  <text x="1000" y="85" class="entity-title" style="font-size: 16px;">图例说明 (Legend)</text>
+  
+  <!-- 实体类型 -->
+  <rect x="1000" y="105" width="25" height="15" class="entity"/>
+  <text x="1035" y="117" class="attribute">核心业务实体</text>
+  
+  <rect x="1000" y="130" width="25" height="15" class="junction"/>
+  <text x="1035" y="142" class="attribute">关系表</text>
+  
+  <rect x="1000" y="155" width="25" height="15" class="weak-entity"/>
+  <text x="1035" y="167" class="attribute">支持/日志实体</text>
+  
+  <!-- 字段类型 -->
+  <text x="1000" y="190" class="pk">PK - 主键</text>
+  <text x="1100" y="190" class="fk">FK - 外键</text>
+  <text x="1200" y="190" class="attribute">UK - 唯一键</text>
+  
+  <!-- 功能标记 -->
+  <text x="1000" y="215" class="attribute">📊 - 自动触发器</text>
+  <text x="1150" y="215" class="attribute">🔧 - 存储过程</text>
+  
+  <!-- 关系说明 -->
+  <text x="1000" y="245" class="entity-title" style="font-size: 14px;">关系说明</text>
+  <text x="1000" y="265" class="attribute">• 发布关系: USER → QUESTION (1:N)</text>
+  <text x="1000" y="280" class="attribute">• 回答关系: USER → ANSWER (1:N)</text>
+  <text x="1000" y="295" class="attribute">• 包含关系: QUESTION → ANSWER (1:N)</text>
+  <text x="1000" y="310" class="attribute">• 点赞关系: USER ↔ QUESTION (M:N)</text>
+  <text x="1000" y="325" class="attribute">  通过 QUESTION_LIKES 表实现</text>
+  
+  <!-- 审计关系 -->
+  <text x="1000" y="350" class="attribute">• 登录日志: USER → USER_LOGIN_LOG (1:N)</text>
+  <text x="1000" y="365" class="attribute">• 审计日志: ANSWER → ANSWER_AUDIT_LOG (1:N)</text>
+  <text x="1000" y="380" class="attribute">• 操作审计: USER → ANSWER_AUDIT_LOG (1:N)</text>
+  
+  <!-- 数据库特性 -->
+  <text x="1000" y="410" class="entity-title" style="font-size: 14px;">数据库特性</text>
+  <text x="1000" y="430" class="attribute">✓ 8个触发器自动维护数据一致性</text>
+  <text x="1000" y="445" class="attribute">✓ 2个存储过程提供高级功能</text>
+  <text x="1000" y="460" class="attribute">✓ 完整的外键约束保证数据完整性</text>
+  <text x="1000" y="475" class="attribute">✓ 唯一约束防止重复数据</text>
+  <text x="1000" y="490" class="attribute">✓ 索引优化提高查询性能</text>
+  
+  <!-- 技术栈 -->
+  <text x="1000" y="520" class="entity-title" style="font-size: 14px;">技术栈</text>
+  <text x="1000" y="540" class="attribute">Flask + SQLAlchemy + MySQL</text>
+  <text x="1000" y="555" class="attribute">Flask-Migrate + Alembic</text>
+  
+</svg>
